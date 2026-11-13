@@ -123,7 +123,17 @@ function setPhase(n){if(busy||n<0||n>2)return; focused=-1;zoom=1;panX=panY=0;pha
 function focus(i){if(phase!==2||busy||i<0||i>5)return;focused=i;zoom=1;panX=panY=0;paper.classList.add('zoomed');draw();}
 function global(){if(phase!==2)return;focused=-1;zoom=1;panX=panY=0;paper.classList.remove('zoomed');draw()}
 function zoomBy(f){if(phase!==2)return; zoom=Math.max(1,Math.min(3.5,zoom*f));if(zoom===1){panX=panY=0}draw()}
-main.addEventListener('click',()=>{if(focused>=0){global();return}setPhase(phase===2?0:phase+1)});
+function foldBack(){
+ if(busy)return;
+ focused=-1;zoom=1;panX=panY=0;
+ phase=1;paper.classList.remove('open-bottom','zoomed');draw();
+ busy=true;main.disabled=true;
+ window.setTimeout(()=>{
+   phase=0;paper.classList.remove('open-sides');draw();
+   window.setTimeout(()=>{busy=false;main.disabled=false},reduced?40:1370);
+ },reduced?40:1550);
+}
+main.addEventListener('click',()=>{if(focused>=0){global();return}if(phase===2){foldBack();return}setPhase(phase+1)});
 overview.addEventListener('click',global);plus.addEventListener('click',()=>zoomBy(1.35));minus.addEventListener('click',()=>zoomBy(1/1.35));
 thumbs.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)focus(Number(b.dataset.go))});
 viewer.addEventListener('click',e=>{if(silentClick){silentClick=false;return}if(busy)return;if(phase<2){setPhase(phase+1);return}const el=e.target.closest('[data-panel]');if(el)focus(Number(el.dataset.panel))});
